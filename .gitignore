@@ -1,0 +1,6 @@
+.idea/
+*.vuic
+WebUI/dist/*
+WebUI/node_modules/*
+.vscode/*
+ext/.vscode/*

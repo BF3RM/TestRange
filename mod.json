@@ -1,0 +1,9 @@
+{
+	"Name": "TestRange",
+	"Authors": ["Lukita"],
+	"Description": "Testing range utilities",
+	"URL": "",
+	"Version": "0",
+	"HasWebUI": true,
+	"HasVeniceEXT": true
+}
