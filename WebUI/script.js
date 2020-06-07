@@ -28,3 +28,13 @@ function UpdatePosition(index, y, x) {
         hitElement.setAttribute('style', 'position:absolute; top:' + x + ";left:" + y)
     }
 }
+
+function SetDistancePlayerName(distance, player) {
+    $("#distance_info .distance").text(distance + " m")
+    $("#distance_info .player_name").text("(" + player + ")")
+}
+
+function ClearDistancePlayerName() {
+    $("#distance_info .distance").text("")
+    $("#distance_info .player_name").text("")
+}
