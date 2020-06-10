@@ -14,7 +14,7 @@ function TestRangeServer:RegisterEvents()
 end
 
 function TestRangeServer:RegisterHooks()
-	Hooks:Install("Soldier:Damage", 999, self, self.OnSoldierDamage)
+	Hooks:Install("Soldier:Damage", 1, self, self.OnSoldierDamage)
 end
 
 -- Routing events
