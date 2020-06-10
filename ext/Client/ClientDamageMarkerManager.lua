@@ -105,14 +105,6 @@ function ClientDamageMarkerManager:OnUpdateManager(p_Delta, p_Pass)
 end
 
 
-function ClientDamageMarkerManager:ClearDamageMarkers()
-	for index, value in pairs(self.hitTransformList) do
-		self.hitTransformList[index] = nil
-	end
-	WebUI:ExecuteJS("ClearHits()")
-end
-
-
 function ClientDamageMarkerManager:OnShowDistance(args)
 	local option = toboolean(args[1])
 	if option == nil then
@@ -132,7 +124,8 @@ function ClientDamageMarkerManager:OnShowDamage(args)
 	end
 	self.showDamage = option
 	if option == false then
-		self:ClearDamageMarkers()
+		self.hitTransformList = {}
+		WebUI:ExecuteJS("ClearHits()")
 	end
 end
 
