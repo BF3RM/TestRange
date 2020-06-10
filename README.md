@@ -4,7 +4,7 @@ shortcuts, etc.
 
 # Commands and shortcuts
 Below, you will find a list of all the commands available in this mod. Command arguments
-between angle brackets (\<abc\>) are mandatory those between brackets (\[abc\]) are optional.
+between angle brackets (\<abc\>) are mandatory and those between brackets (\[abc\]) are optional.
 
 ### Settings and utilities
 
