@@ -8,9 +8,9 @@ between angle brackets (\<abc\>) are mandatory and those between brackets (\[abc
 
 ### Settings and utilities
 
-- `testrange.showDistance <true/false>`: Show/hide the distance to other soldiers.
-- `testrange.showDamage <true/false>`: Show/hide the damage indicators.
-- `testrange.broadcastDamage <true/false>`: Show/hide the damage that other players deal.
+- `testrange.showDistance <true/false>`: Show/hide the distance to other soldiers. Default is `true` when the mod is loaded.
+- `testrange.showDamage <true/false>`: Show/hide the damage indicators. Default is `true` when the mod is loaded.
+- `testrange.broadcastDamage <true/false>`: Show/hide the damage that other players deal. Default is `false` when the mod is loaded.
 - `testrange.pos`: Print the player's position on the console.
 
 ### Spawning bots
