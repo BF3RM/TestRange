@@ -21,15 +21,15 @@ is the current amount of bots plus 1.
 - `testrange.spawnAtDistance <distance> [height] [team] [squad] [name]`: 
 Spawn a bot at a given `distance` and `height` from the player. Default value for `height` is 2.
 
-- `testrange.spawnAtPosition <*X*> <*Y*> <*Z*> [*team*] [*squad*] [*name*]`:
+- `testrange.spawnAtPosition <X> <Y> <Z> [team] [squad] [name]`:
  Spawn a bot at given coordinates `X`, `Y` and `Z`. To get a reference point, use the command 
  `testrange.pos` to print the player's position on the console. 
 
-- `testrange.spawnCircle <*radius*> [*distance*] [*team*]`: Spawn bots in a circle of given
+- `testrange.spawnCircle <radius> [distance] [team]`: Spawn bots in a circle of given
 `radius` and at a `distance` from the player. The default value for `distance` is 0, so the 
 circle will spawn around the player. 
 
-- `testrange.spawnRange <*minDistance*> <*maxDistance*> <*delta*> [*lateralDistance*] [*team*]`:
+- `testrange.spawnRange <minDistance> <maxDistance> <delta> [lateralDistance] [team]`:
  Spawn bots as in a shooting range-like pattern from a minimum distance up to a maximum (inclusive), 
  spaced by `delta` meters. The optional parameter `lateralDistance` default value is 1 meter and it
  determines how far each bot will be from each other laterally. If it is equal to 0, the bots will spawn
