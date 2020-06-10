@@ -10,8 +10,9 @@ function ServerDamageMarkerManager:OnSoldierDamage(hook, soldier, damageInfo, gi
 	if(giverInfo.giver == nil or soldier.player == giverInfo.giver) then
 		return
 	end
-	NetEvents:SendToLocal("Soldier:Damage", giverInfo.giver, soldier.transform, damageInfo.damage, damageInfo.boneIndex,
-			damageInfo.position, damageInfo.origin, damageInfo.isBulletDamage, damageInfo.isExplosionDamage)
+	NetEvents:BroadcastLocal("Soldier:Damage", giverInfo.giver.id, soldier.transform, soldier.player.name,
+			damageInfo.damage, damageInfo.boneIndex, damageInfo.position, damageInfo.origin, damageInfo.isBulletDamage,
+			damageInfo.isExplosionDamage)
 end
 
 

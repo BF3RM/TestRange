@@ -2,7 +2,7 @@ class "ClientDamageMarkerManager"
 
 
 local TEXT_UP_SPEED = 0 -- 0.25
-local FADE_OUT_TIME = 5 -- 7
+local FADE_OUT_TIME = 7
 local RAYCAST_INTERVAL = 0.5 -- seconds
 local MAX_RAYCAST_DISTANCE = 2000 -- meters
 
@@ -15,6 +15,9 @@ end
 function ClientDamageMarkerManager:RegisterVars()
 	self.hitTransformList = {}
 	self.raycastTimer = 0
+	self.showDistance = true
+	self.showDamage = true
+	self.broadcastDamage = false
 end
 
 
@@ -23,17 +26,12 @@ function ClientDamageMarkerManager:RegisterEvents()
 end
 
 
-function ClientDamageMarkerManager:OnSoldierDamage(enemyTransform, damage, boneIndex, hitPosition, originPosition,
-												   isBulletDamage, isExplosionDamage)
-	local boneOffset = self:GetBoneOffset(enemyTransform, boneIndex)
-	local hitMarkerPosition = hitPosition + boneOffset
-
-	-- Append lastHitTransform to hitTransformList
-	local index = #(self.hitTransformList) + 1
-	table.insert(self.hitTransformList, {position=hitMarkerPosition, timer=0})
-	local trans = string.format("DisplayHit(%s, %s, %s, %d)", index, round(damage, 2), FADE_OUT_TIME, boneIndex)
-	WebUI:ExecuteJS(trans)
-
+function ClientDamageMarkerManager:OnSoldierDamage(giverId, enemyTransform, enemyName, damage, boneIndex, hitPosition,
+												   originPosition, isBulletDamage, isExplosionDamage)
+	local localPlayerId = PlayerManager:GetLocalPlayer().id
+	if self.broadcastDamage == false and giverId ~= localPlayerId then
+		return
+	end
 	-- Print on the console
 	local hitDistance = originPosition:Distance(hitPosition)
 	local bodyPart
@@ -44,7 +42,23 @@ function ClientDamageMarkerManager:OnSoldierDamage(enemyTransform, damage, boneI
 	else
 		bodyPart = 'Other'
 	end
-	print(string.format("Damage: %s at %s meters (%s)", round(damage, 2), round(hitDistance, 1), bodyPart))
+	local damageRecord = string.format("Damage: %s at %s meters (%s) - %s",
+			round(damage, 2), round(hitDistance, 1), bodyPart, enemyName)
+	print(damageRecord)
+
+	if self.showDamage == false then
+		return
+	end
+
+	-- Display the damage markers
+	local boneOffset = self:GetBoneOffset(enemyTransform, boneIndex)
+	local hitMarkerPosition = hitPosition + boneOffset
+
+	-- Append lastHitTransform to hitTransformList
+	local index = #(self.hitTransformList) + 1
+	table.insert(self.hitTransformList, {position=hitMarkerPosition, timer=0})
+	local trans = string.format("DisplayHit(%s, %s, %s, %d)", index, round(damage, 2), FADE_OUT_TIME, boneIndex)
+	WebUI:ExecuteJS(trans)
 end
 
 
@@ -53,40 +67,82 @@ function ClientDamageMarkerManager:OnUpdateManager(p_Delta, p_Pass)
 		return
 	end
 
-	for index, hitObject in pairs(self.hitTransformList) do
-		if hitObject ~= nil then
-			-- Updating world position
-			local updated_position = hitObject.position + Vec3(0, TEXT_UP_SPEED * hitObject.timer, 0)
-			local screen_position = ClientUtils:WorldToScreen(updated_position)
-			if screen_position ~= nil then
-				local js_function = string.format("UpdatePosition(%s, %s, %s)",	index,
-						                          screen_position.x, screen_position.y)
-				WebUI:ExecuteJS(js_function)
-			end
+	if self.showDamage then
+		for index, hitObject in pairs(self.hitTransformList) do
+			if hitObject ~= nil then
+				-- Updating world position
+				local updated_position = hitObject.position + Vec3(0, TEXT_UP_SPEED * hitObject.timer, 0)
+				local screen_position = ClientUtils:WorldToScreen(updated_position)
+				if screen_position ~= nil then
+					local js_function = string.format("UpdatePosition(%s, %s, %s)",	index,
+							screen_position.x, screen_position.y)
+					WebUI:ExecuteJS(js_function)
+				end
 
-			-- Increment hit's timer
-			hitObject.timer = hitObject.timer + p_Delta
-
-			-- Remove if fade out delay is over
-			if (hitObject.timer >= FADE_OUT_TIME) then
-				self.hitTransformList[index] = nil
+				-- Remove if fade out delay is over
+				hitObject.timer = hitObject.timer + p_Delta
+				if (hitObject.timer >= FADE_OUT_TIME) then
+					self.hitTransformList[index] = nil
+				end
 			end
 		end
 	end
 
 	self.raycastTimer = self.raycastTimer + p_Delta
-
-	if self.raycastTimer >= RAYCAST_INTERVAL then
+	-- Raycast only at a predefined time interval
+	if self.raycastTimer >= RAYCAST_INTERVAL and self.showDistance then
 		local playerName, distance = self:GetRaycastPlayerDistance()
+		-- Show distance to the other player, if any was found
 		if playerName ~= nil and distance ~= nil then
 			local js_function = string.format("SetDistancePlayerName(%s, \"%s\")", round(distance, 1), playerName)
 			WebUI:ExecuteJS(js_function)
+		-- Clear the distance UI in case no player was hit by the raycast
 		else
 			WebUI:ExecuteJS("ClearDistancePlayerName()")
 		end
 		self.raycastTimer = 0
 	end
+end
 
+
+function ClientDamageMarkerManager:ClearDamageMarkers()
+	for index, value in pairs(self.hitTransformList) do
+		self.hitTransformList[index] = nil
+	end
+	WebUI:ExecuteJS("ClearHits()")
+end
+
+
+function ClientDamageMarkerManager:OnShowDistance(args)
+	local option = toboolean(args[1])
+	if option == nil then
+		return 'You must provide a valid boolean. Usage: _testrange.showDistance <true/false>'
+	end
+	self.showDistance = option
+	if option == false then
+		WebUI:ExecuteJS("ClearDistancePlayerName()")
+	end
+end
+
+
+function ClientDamageMarkerManager:OnShowDamage(args)
+	local option = toboolean(args[1])
+	if option == nil then
+		return 'You must provide a valid boolean. Usage: _testrange.showDamage <true/false>'
+	end
+	self.showDamage = option
+	if option == false then
+		self:ClearDamageMarkers()
+	end
+end
+
+
+function ClientDamageMarkerManager:OnBroadcastDamage(args)
+	local option = toboolean(args[1])
+	if option == nil then
+		return 'You must provide a valid boolean. Usage: _testrange.showDamage <true/false>'
+	end
+	self.broadcastDamage = option
 end
 
 

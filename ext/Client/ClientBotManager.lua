@@ -2,29 +2,6 @@ class "ClientBotManager"
 
 function ClientBotManager:__init()
     print("Initializing ClientBotManager")
-    self:RegisterConsoleCommands()
-end
-
-
-function ClientBotManager:RegisterConsoleCommands()
-    Console:Register('spawnAtPosition',
-            '<*X*> <*Y*> <*Z*> [*team*] [*squad*] [*name*] Spawn a bot at a given position',
-            self, self.OnSpawnAtPosition)
-    Console:Register('spawnAtDistance',
-            '<*distance*> [*height*] [*team*] [*squad*] [*name*] Spawn a bot at a given distance/height from the player',
-            self, self.OnSpawnAtDistance)
-    Console:Register('spawnLine',
-            '<*minDistance*> <*maxDistance*> <*delta*> [*team*] Spawn bots in a line',
-            self, self.OnSpawnLine)
-    Console:Register('spawnRange',
-            '<*minDistance*> <*maxDistance*> <*delta*> [*lateralDistance*] [*team*] Spawn bots as a shooting range',
-            self, self.OnSpawnRange)
-    Console:Register('spawnCircle', '<*radius*> [*distance* [*team*] Spawn bots in a circle',
-            self, self.OnSpawnCircle)
-
-    Console:Register('kick', ' <*name*> Kicks a bot with a given name.', self, self.OnKick)
-    Console:Register('kickAll', ' Kicks all the bots.', self, self.OnKickAll)
-    Console:Register('pos', 'Get player position', self, self.OnGetPlayerPos)
 end
 
 
@@ -42,7 +19,7 @@ end
 function ClientBotManager:OnSpawnAtPosition(args)
     -- Print usage instructions if we got an invalid number of arguments
     if #args < 3 then
-        return 'Usage: _bots.spawnAtPosition_ <*X*> <*Y*> <*Z*> [*team*] [*squad*] [*name*]'
+        return 'Usage: _testrange.spawnAtPosition_ <*X*> <*Y*> <*Z*> [*team*] [*squad*] [*name*]'
     end
 
     -- Parse and validate the arguments
@@ -75,7 +52,7 @@ end
 function ClientBotManager:OnSpawnAtDistance(args)
     -- Print usage instructions if we got an invalid number of arguments
     if  #args < 1 then
-        return 'Usage: _bots.spawnAtDistance_ <*distance*> [*height*] [*team*] [*squad*] [*name*]'
+        return 'Usage: _testrange.spawnAtDistance_ <*distance*> [*height*] [*team*] [*squad*] [*name*]'
     end
 
     -- Parse and validate the arguments.
@@ -110,45 +87,11 @@ function ClientBotManager:OnSpawnAtDistance(args)
 end
 
 
--- Spawn bots in a straight line given minimum and maximum distances and the spacing between them
-function ClientBotManager:OnSpawnLine(args)
-    -- Print usage instructions if we got an invalid number of arguments.
-    if #args < 3 then
-        return 'Usage: _bots.spawnLine <*minDistance*> <*maxDistance*> <*delta*> [*team*]'
-    end
-
-    -- Validate and parse arguments
-    local minDistance = tonumber(args[1])
-    local maxDistance = tonumber(args[2])
-    local delta = tonumber(args[3])
-    local team = args[4]
-    if minDistance == nil or maxDistance == nil or delta == nil then
-        return 'Error: **Distances must be numeric.**'
-    end
-
-    local player = PlayerManager:GetLocalPlayer()
-    -- Player has not spawned
-    if player.soldier == nil then
-        return
-    end
-
-    -- Get local player
-    local playerTransform = player.soldier.transform
-    local currentDistance = minDistance
-    local height = 2
-    while currentDistance <= maxDistance do
-        local botTransform = self:CalculateBotTransform(playerTransform, currentDistance, height)
-        NetEvents:SendLocal('Bots:Spawn', botTransform, team)
-        currentDistance = currentDistance + delta
-    end
-end
-
-
 -- Spawn bots in a shooting range-like pattern, spacing them sideways.
 function ClientBotManager:OnSpawnRange(args)
     -- Print usage instructions if we got an invalid number of arguments.
     if #args < 3 then
-        return 'Usage: _bots.spawnRange <*minDistance*> <*maxDistance*> <*delta*> [*lateralDistance*] [*team*]'
+        return 'Usage: _testrange.spawnRange <*minDistance*> <*maxDistance*> <*delta*> [*lateralDistance*] [*team*]'
     end
 
     -- Validate and parse arguments
@@ -187,7 +130,7 @@ end
 function ClientBotManager:OnSpawnCircle(args)
     -- Print usage instructions if we got an invalid number of arguments.
     if #args < 1 then
-        return 'Usage: _bots.spawnCircle <*radius*> [*distance*] [*team*]'
+        return 'Usage: _testrange.spawnCircle <*radius*> [*distance*] [*team*]'
     end
 
     -- Validate and parse arguments
@@ -224,7 +167,7 @@ end
 function ClientBotManager:OnKick(args)
     -- Print usage instructions if we got an invalid number of arguments.
     if #args ~= 1 then
-        return 'Usage: _bots.kick_ <*name*>'
+        return 'Usage: _testrange.kick_ <*name*>'
     end
 
     -- Parse and validate arguments.

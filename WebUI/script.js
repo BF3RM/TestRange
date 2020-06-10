@@ -38,3 +38,7 @@ function ClearDistancePlayerName() {
     $("#distance_info .distance").text("")
     $("#distance_info .player_name").text("")
 }
+
+function ClearHits() {
+    $("#root_damage").html("")
+}

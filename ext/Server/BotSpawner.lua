@@ -18,17 +18,16 @@ function BotSpawner:RegisterEvents()
 end
 
 
-
 function BotSpawner:_OnUpdate(dt, pass)
 	if pass ~= UpdatePass.UpdatePass_PostFrame then
 		return
 	end
 
-	for _, bot in pairs(self._bots) do
-		Events:Dispatch('Bot:Update', bot, dt)
+	for _, botInfo in pairs(self._bots) do
+		Events:Dispatch('Bot:Update', botInfo.bot, dt)
 
-		if bot.soldier ~= nil then
-			bot.soldier:SingleStepEntry(bot.controlledEntryId)
+		if botInfo.bot.soldier ~= nil then
+			botInfo.bot.soldier:SingleStepEntry(botInfo.bot.controlledEntryId)
 		end
 	end
 end
@@ -36,12 +35,12 @@ end
 
 function BotSpawner:_OnUnloading()
 	-- Extension is unloading. Get rid of all the bots.
-	self:DestroyAllBots()
+	self:DestroyAllBots('UNLOADING')
 end
 
 
 -- Creates a bot with the specified name and puts it in the specified team and squad.
-function BotSpawner:CreateBot(name, team, squad)
+function BotSpawner:CreateBot(name, team, squad, ownerId)
 	-- Create a player for this bot.
 	local botPlayer = PlayerManager:CreatePlayer(name, team, squad)
 
@@ -53,7 +52,8 @@ function BotSpawner:CreateBot(name, team, squad)
 	-- Add to our local storage.
 	-- We need to keep the EntryInput instances around separately because if we don't
 	-- they'll get garbage-collected and destroyed and that will cause our game to crash.
-	table.insert(self._bots, botPlayer)
+	local botInfo = {bot = botPlayer, ownerId = ownerId}
+	table.insert(self._bots, botInfo)
 	self._botInputs[botPlayer.id] = botInput
 
 	return botPlayer
@@ -62,8 +62,8 @@ end
 
 -- Returns `true` if the specified player is a bot, `false` otherwise.
 function BotSpawner:IsBot(player)
-	for _, bot in pairs(self._bots) do
-		if bot == player then
+	for _, botInfo in pairs(self._bots) do
+		if botInfo.bot == player then
 			return true
 		end
 	end
@@ -97,45 +97,39 @@ end
 
 
 -- Destroys / kicks the specified `bot` player.
-function BotSpawner:DestroyBot(bot)
+function BotSpawner:DestroyBot(bot, playerId)
 	-- Find index of this bot.
 	local idx = nil
 
-	for i, botPlayer in pairs(self._bots) do
-		if bot == botPlayer then
+	for i, botInfo in pairs(self._bots) do
+		if bot == botInfo.bot and botInfo.ownerId == playerId then
+			self._bots[i] = nil
+			self._botInputs[bot.id] = nil
+			bot.input = nil
+			PlayerManager:DeletePlayer(bot)
 			idx = i
 			break
 		end
 	end
-
-	-- Bot was not found.
-	if idx == nil then
-		return
-	end
-
-	local botId = bot.id
-
-	-- Delete the bot.
-	bot.input = nil
-	PlayerManager:DeletePlayer(bot)
-
-	-- Delete the input.
-	self._botInputs[botId] = nil
-
-	-- Delete the bot from the list.
-	table.remove(self._bots, idx)
+	return #(self._bots)
 end
 
 
--- Destroys / kicks all bot players.
-function BotSpawner:DestroyAllBots()
-	for _, bot in pairs(self._bots) do
-		bot.input = nil
-		PlayerManager:DeletePlayer(bot)
+-- Destroys / kicks all bots that belong to the requesting player.
+function BotSpawner:DestroyAllBots(playerId)
+	for i, botInfo in pairs(self._bots) do
+		if botInfo ~= nil then
+			if playerId == botInfo.ownerId or playerId == 'UNLOADING' then
+				self._bots[i] = nil
+				self._botInputs[botInfo.bot.id] = nil
+				botInfo.bot.input = nil
+				PlayerManager:DeletePlayer(botInfo.bot)
+			end
+		end
 	end
-
-	self._bots = {}
-	self._botInputs = {}
+	return #(self._bots)
+	--self._bots = {}
+	--self._botInputs = {}
 end
 
 

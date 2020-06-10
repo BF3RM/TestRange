@@ -29,7 +29,7 @@ end
 -- Refer to the client __init__.lua script for more information.
 function ServerBotManager:OnBotSpawn(player, transform, team, squad, name)
 	local squadId = SquadId[squad] or SquadId['SquadNone']  -- Use 'SquadNone' as default
-	name = name or ('Bot_'..(self.botCount + 1))            -- Use 'Bot_N' as default, where N is a number
+	name = name or ('Bot'..(self.botCount + 1))             -- Use 'BotN' as default, where N is a number
 
 	-- Use the enemy team as default
 	local teamId = TeamId[team]
@@ -59,7 +59,7 @@ function ServerBotManager:OnBotSpawn(player, transform, team, squad, name)
 		bot.squadId = squadId
 	else
 		-- Otherwise, create a new bot. This returns a new Player object.
-		bot = m_botSpawner:CreateBot(name, teamId, squadId)
+		bot = m_botSpawner:CreateBot(name, teamId, squadId, player.id)
 	end
 
 	-- Get the default MpSoldier blueprint and the US assault kit.
@@ -87,14 +87,12 @@ function ServerBotManager:OnKick(player, name)
 	end
 
 	-- If they are, destroy them.
-	m_botSpawner:DestroyBot(targetPlayer)
-	self.botCount = self.botCount - 1
+	self.botCount = m_botSpawner:DestroyBot(targetPlayer, player.id)
 end
 
 
 function ServerBotManager:OnKickAll(player)
-	m_botSpawner:DestroyAllBots()
-	self.botCount = 0
+	self.botCount = m_botSpawner:DestroyAllBots(player.id)
 end
 
 
