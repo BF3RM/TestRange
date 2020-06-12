@@ -11,6 +11,7 @@ end
 function TestRangeServer:RegisterEvents()
 	Events:Subscribe('Engine:Update', self, self.OnEngineUpdate)
 	Events:Subscribe('Bot:Update', self, self.OnBotUpdate)
+	Events:Subscribe('Player:Left', self, self.OnPlayerLeft)
 end
 
 function TestRangeServer:RegisterHooks()
@@ -24,6 +25,10 @@ end
 
 function TestRangeServer:OnBotUpdate(p_Bot, p_Delta)
 	m_ServerBotManager:OnBotUpdate(p_Bot, p_Delta)
+end
+
+function TestRangeServer:OnPlayerLeft(p_Player)
+	m_ServerBotManager:OnPlayerLeft(p_Player)
 end
 
 -- Routing hooks

@@ -96,6 +96,11 @@ function ServerBotManager:OnKickAll(player)
 end
 
 
+function ServerBotManager:OnPlayerLeft(player)
+	self.botCount = m_botSpawner:DestroyAllBots(player.id)
+end
+
+
 function ServerBotManager:OnEngineUpdate(dt)
 	-- We keep track of pitch and yaw time separately here because we want
 	-- the bots to turn and look at different rates.
